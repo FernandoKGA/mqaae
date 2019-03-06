@@ -1,0 +1,886 @@
+---
+title: "Relatório sobre análises feitas em um conjunto de dados de uma estação de tratamento de água"
+author: "Fernando Karchiloff Gouveia de Amorim, Priscila Shibata Mendes"
+date: "25 de novembro de 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introdução
+
+Este relatório é o resultado de um trabalho exigido pelo Prof. Dr. Esteban Fernandez Tuesta para a matéria de Métodos Quantitativos Aplicados à Administração de Empresas I - ACH2036 para conclusão da matéria, estruturado pelos alunos: Fernando Karchiloff Gouveia de Amorim (N.USP 10387644) e Priscila Shibata Mendes (N.USP 8540501).
+
+## Objetivo
+
+O intuito deste trabalho é aplicar as análises exigidas que foram aprendidas durante as aulas da matéria em um conjunto de dados determinado pelo professor e demonstrar os resultados que foram encontrados e interpretá-los conforme o possível. Neste caso, o conjunto de dados foram medições provindos de uma estação de tratamento de águas genérica.
+
+## Explicando o conjunto de dados
+
+O conjunto de dados que nos foi fornecido pertence à uma estação de tratamento de águas genérica, ou seja, não possuímos sua localização, somente seus dados. Esses dados incluem diversas variáveis que derivam de medições feitas durante o processo de tratamento desta água, da entrada até sua saída. As medições foram feitas em dias registrados que constam no conjunto de dados. O número total de entradas no conjunto foi de 527 dias de medição.
+
+Algo a ser observado é que existem diversos dias que as medições foram incompletas, certas variáveis não foram medidas, resultando num conjunto de dados incompleto. A solução para aplicar algumas das análises que exigem conjunto completos foi utilizar somente os dias que possuem medições completas de todas as variáveis, o que nos gera cerca de 380 observações.
+
+Vamos listar abaixo quais são estas variáveis:
+
+* Data : Data da medição.
+* Q-E : Vazão de água que entra na estação.
+* ZN-E : Quantidade de Zinco na água que entra na estação.
+* PH-E : pH (potencial Hidrogeniônico) da água que entra na estação.
+* DBO-E : Demanda bioquímica de oxigênio da água que entra na estação.
+* DQO-E : Demanda quimica de oxigênio da água que entra na estação.
+* SS-E :  Sólidos suspensos na água que entra na estação.
+* SSV-E : Sólidos suspensos voláteis na água que entra na estação.
+* SED-E : Quantidade de sedimentos na água que entra na estação.
+* COND-E : Condutividade da água que entra na estação.
+* PH-P : pH (potencial Hidrogeniônico) da água no primeiro "decantador".
+* DBO-P : Demanda bioquímica de oxigênio da água no primeiro "decantador".
+* SS-P : Sólidos suspensos na água no primeiro "decantador".
+* SSV-P : Sólidos suspensos voláteis na água no primeiro "decantador".
+* SED-P : Quantidade de sedimentos na água no primeiro "decantador".
+* COND-P: Condutividade da água no primeiro "decantador".
+* PH-D : pH (potencial Hidrogeniônico) da água no segundo "decantador".
+* DBO-D : Demanda bioquímica de oxigênio no segundo "decantador".
+* DQO-D : Demanda química de oxigênio no segundo "decantador".
+* SS-D : Sólidos suspensos na água no segundo "decantador".
+* SSV-D : Sólidos suspensos voláteis na água no segundo "decantador".
+* SED-D : Quantidade de sedimentos na água no segundo "decantador".
+* COND-D : Condutividade da água no segundo "decantador".
+* PH-S : pH (potencial Hidrogeniônico) da água na saída da estação.
+* DBO-S : Demanda bioquímica de oxigênio da água na saída da estação.
+* DQO-S : Demanda química de oxigênio da água na saída da estação.
+* SS-S : Sólidos suspensos na água na saída da estação.
+* SSV-S : Sólidos suspensos voláteis na água na saída da estação.
+* SED-S : Quantidade de sedimentos na água na saída da estação.
+* COND-S : Condutividade da água na saída da estação.
+* RD-DBO-P : Performance da Demanda bioquímica de oxigênio da água no primeiro "decantador".
+* RD-SS-P : Performance de Sólidos suspensos na água no primeiro "decantador".
+* RD-SED-P : Performance da Quantidade de sedimentos na água no primeiro "decantador".
+* RD-DBO-S : Performance da Demanda bioquímica de oxigênio da água no segundo "decantador".
+* RD-DQO-S : Performance da Demanda química de oxigênio da água no segundo "decantador".
+* RD-DBO-G : Performance global da Demanda bioquímica de oxigênio da água na estação.
+* RD-DQO-G : Performance global da Demanda química de oxigênio da água na estação.
+* RD-SS-G : Performance global de Sólidos suspenso na água na estação.
+* RD-SED-G : Performance global de sedimentos da água na estação.
+
+## Análises a serem feitas
+
+O professor determinou para este trabalho, que os 12 tipos de análises multivariadas ensinadas em aula fossem aplicadas no conjunto de dados recebido. As análises que devemos aplicar estão descritas nesta lista:
+
+* ANOVA
+* Análise de Regressão Simples
+* Análise de Regressão Múltipla
+* Análise de Componentes Principais
+* Análise Fatorial
+* Escalonamento Multidimensional
+* Análise Discriminante
+* Correlação Canônica
+* Testes de Aderência
+* Co-clustering
+* Random Forest
+* Regressão Logística
+
+## Leitura do conjunto de dados
+
+Antes de explicar como foram feitas as análises, vamos explicar como a leitura do *dataset* foi realizada. O conjunto de dados se encontrava em um arquivo de texto com extensão `.txt` e foi formatado para uma planilha do tipo Excel com extensão `.xlsx` com finalidade de facilitar a leitura dos dados.
+
+Para ler os dados no R, carrega-se a biblioteca padrão do R para arquivos de planilha e fazemos a leitura.
+
+```{r warning=FALSE}
+library(readxl)
+#Caminho para o arquivo.
+data_estacao <- read_excel("C:/Users/ferna/Desktop/banco_mqaae/data_estacao.xlsx", 
+                           col_names = FALSE, skip = 1)
+
+#Colocando os nomes das colunas.
+colnames(data_estacao) <- c("Data","Q-E","ZN-E","PH-E","DBO-E","DQO-E","SS-E","SSV-E","SED-E","COND-E","PH-P","DBO-P","SS-P","SSV-P","SED-P","COND-P","PH-D","DBO-D","DQO-D","SS-D","SSV-D","SED-D","COND-D","PH-S","DBO-S","DQO-S","SS-S","SSV-S","SED-S","COND-S","RD-DBO-P","RD-SS-P","RD-SED-P","RD-DBO-S","RD-DQO-S","RD-DBO-G","RD-DQO-G","RD-SS-G","RD-SED-G")
+
+#Colocando NA em dados não conhecidos.
+data_estacao[data_estacao == "?"] <- NA
+
+#Transformação para numérico.
+data_estacao$Data <- as.factor(data_estacao$Data)
+data_estacao$'Q-E' <- as.integer(data_estacao$'Q-E')
+data_estacao$'ZN-E' <- as.double(data_estacao$'ZN-E')
+data_estacao$'PH-E' <- as.double(data_estacao$'PH-E')
+data_estacao$'DBO-E' <- as.integer(data_estacao$'DBO-E')
+data_estacao$'DQO-E' <- as.integer(data_estacao$'DQO-E')
+data_estacao$'SS-E' <- as.integer(data_estacao$'SS-E')
+data_estacao$'SSV-E' <- as.double(data_estacao$'SSV-E')
+data_estacao$'SED-E' <- as.double(data_estacao$'SED-E')
+data_estacao$'COND-E' <- as.integer(data_estacao$'COND-E')
+data_estacao$'PH-P' <- as.double(data_estacao$'PH-P')
+data_estacao$'DBO-P' <- as.integer(data_estacao$'DBO-P')
+data_estacao$'SS-P' <- as.integer(data_estacao$'SS-P')
+data_estacao$'SSV-P' <- as.double(data_estacao$'SSV-P')
+data_estacao$'SED-P' <- as.double(data_estacao$'SED-P')
+data_estacao$'COND-P' <- as.integer(data_estacao$'COND-P')
+data_estacao$'PH-D' <- as.double(data_estacao$'PH-D')
+data_estacao$'DBO-D' <- as.integer(data_estacao$'DBO-D')
+data_estacao$'DQO-D' <- as.integer(data_estacao$'DQO-D')
+data_estacao$'SS-D' <- as.integer(data_estacao$'SS-D')
+data_estacao$'SSV-D' <- as.double(data_estacao$'SSV-D')
+data_estacao$'SED-D' <- as.double(data_estacao$'SED-D')
+data_estacao$'COND-D' <- as.integer(data_estacao$'COND-D')
+data_estacao$'PH-S' <- as.double(data_estacao$'PH-S')
+data_estacao$'DBO-S' <- as.integer(data_estacao$'DBO-S')
+data_estacao$'DQO-S' <- as.integer(data_estacao$'DQO-S')
+data_estacao$'SS-S' <- as.integer(data_estacao$'SS-S')
+data_estacao$'SSV-S' <- as.double(data_estacao$'SSV-S')
+data_estacao$'SED-S' <- as.double(data_estacao$'SED-S')
+data_estacao$'COND-S' <- as.integer(data_estacao$'COND-S')
+data_estacao$'RD-DBO-P' <- as.double(data_estacao$'RD-DBO-P')
+data_estacao$'RD-SS-P' <- as.double(data_estacao$'RD-SS-P')
+data_estacao$'RD-SED-P' <- as.double(data_estacao$'RD-SED-P')
+data_estacao$'RD-DBO-S' <- as.double(data_estacao$'RD-DBO-S')
+data_estacao$'RD-DQO-S' <- as.double(data_estacao$'RD-DQO-S')
+data_estacao$'RD-DBO-G' <- as.double(data_estacao$'RD-DBO-G')
+data_estacao$'RD-DQO-G' <- as.double(data_estacao$'RD-DQO-G')
+data_estacao$'RD-SS-G' <- as.double(data_estacao$'RD-SS-G')
+data_estacao$'RD-SED-G' <- as.double(data_estacao$'RD-SED-G')
+```
+
+Feita nossa transformação de valores, vamos omitir então os dados de dias em que nossas medições estão incompletas.
+
+```{r}
+#Omitindo os NA's.
+data_est <- na.omit(data_estacao)
+data_est
+```
+
+Isso facilitará a manipulação dos dados posteriormente em nossas análises. Originalmente possuíamos 527 observações, com o comando `na.omit(data_estacao)` reduzimos o *dataset* para 380 observações.
+
+Começaremos então com as análises.
+
+### ANOVA
+
+Para a análise ANOVA, separamos fizemos duas análises diferentes para mostrar diferenças nos dados e como eles reagem. Utilizamos um conjunto de dados dos PHs e de DBOs do nosso conjunto de dados para aplicar essa análise, fora feita com foco na *One-way ANOVA*.
+
+#### pH
+
+Vamos colocar duas hipóteses para podermos validar o sentido da nossa análise:
+
+* ($H_{0}$) Todas as etapas de tratamento tem o mesmo pH.
+* ($H_{1}$) Existe diferença entre os 4 pH's existentes desde a entrada,
+até a saída da estação de tratamento de água .
+
+Veremos agora como tratamos os dados vindos do conjunto de dados.
+```{r R.options=list(max.print=10)}
+#Dados dos pH's juntos.
+phs <- data_est[c("PH-E","PH-P","PH-D","PH-S")]
+
+#Pega as unidades de cada um.
+phs_e <- phs$'PH-E'
+phs_p <- phs$'PH-P'
+phs_d <- phs$'PH-D'
+phs_s <- phs$'PH-S'
+
+#Separação dos dados.
+Niveis <- c(phs_e)
+Tipos <- c("PH-E")
+phs_e_data <- data.frame(Niveis,Tipos)
+
+Niveis <- c(phs_p)
+Tipos <- c("PH-P")
+phs_p_data <- data.frame(Niveis,Tipos)
+
+Niveis <- c(phs_d)
+Tipos <- c("PH-D")
+phs_d_data <- data.frame(Niveis,Tipos)
+
+Niveis <- c(phs_s)
+Tipos <- c("PH-S")
+phs_s_data <- data.frame(Niveis,Tipos)
+
+phs_half_data1 <- rbind(phs_e_data,phs_p_data)
+
+phs_half_data2 <- rbind(phs_half_data1,phs_d_data)
+
+phs_dps <- rbind(phs_half_data2,phs_s_data)
+phs_dps
+```
+
+Com estes dados dos pH's carregados podemos fazer um gráfico do tipo *Box-plot* e de linhas que nos mostre os dados separados em ambos e suas comparações, para então fazermos a análise pela função `aov()`.
+
+Para a geração de gráficos, vamos utilizar a biblioteca *ggpubr*.
+```{r message=FALSE, warning=FALSE}
+library("ggpubr")
+```
+```{r fig.cap = "Gráfico de box-plot dos pH's.", echo = FALSE}
+ggboxplot(phs_dps, y = "Niveis", x = "Tipos", 
+          color = "Tipos", palette = c("#00AFBB", "#E7B800", "#FC4E07", "#ff0000"),
+          order = c("PH-E", "PH-P", "PH-D", "PH-S"),
+          ylab = "Níveis", xlab = "PHs")
+
+```
+```{r fig.cap = "Grafíco de linhas dos pH's.", echo = FALSE}
+ggline(phs_dps, x = "Tipos", y = "Niveis", 
+       add = c("mean_se", "jitter"), 
+       order = c("PH-E", "PH-P", "PH-D", "PH-S"),
+       ylab = "Níveis", xlab = "PHs")
+```
+
+É possível observar já nos gráficos gerados que existe uma certa diferença no último pH, o de saída PH-S. Vamos continuar e verificar se isso se concretizará.
+
+```{r}
+#Execução da função ANOVA.
+anova <- aov(Niveis~Tipos,data=phs_dps)
+anova
+```
+```{r}
+#Resumo.
+summary(anova)
+```
+
+Observando o resumo da saída da função, concluímos que podemos rejeitar a hipótese nula, dado que o "valor-p" é baixo o suficiente. A conclusão que se chega é: existe diferença entre os pH's durante o processo de tratamento da água na estação.
+
+#### DBO
+
+Vamos colocar duas hipóteses para podermos validar o sentido da nossa análise:
+
+* ($H_{0}$) Todas as etapas do tratamento tem o mesmo nível de DBO.
+* ($H_{1}$) Existe diferença entre os 4 DBO's existentes desde a entrada,
+até a saída da estação de tratamento de água.
+
+```{r R.options=list(max.print=10)}
+#Dados dos DBOs juntos.
+dbo <- data_est[c("DBO-E","DBO-P","DBO-D","DBO-S")]
+
+#Pega as unidades de cada um.
+dbo_e <- dbo$'DBO-E'
+dbo_p <- dbo$'DBO-P'
+dbo_d <- dbo$'DBO-D'
+dbo_s <- dbo$'DBO-S'
+
+#Separa os dados.
+Niveis <- c(dbo_e)
+Tipos <- c("DBO-E")
+dbo_e_data <- data.frame(Niveis,Tipos)
+
+
+Niveis <- c(dbo_p)
+Tipos <- c("DBO-P")
+dbo_p_data <- data.frame(Niveis,Tipos)
+
+
+Niveis <- c(dbo_d)
+Tipos <- c("DBO-D")
+dbo_d_data <- data.frame(Niveis,Tipos)
+
+
+Niveis <- c(dbo_s)
+Tipos <- c("DBO-S")
+dbo_s_data <- data.frame(Niveis,Tipos)
+
+
+dbo_half_data1 <- rbind(dbo_e_data,dbo_p_data)
+
+
+dbo_half_data2 <- rbind(dbo_half_data1,dbo_d_data)
+
+
+dbo_dps <- rbind(dbo_half_data2,dbo_s_data)
+dbo_dps
+```
+
+Agora que nossos dados foram tratamos podemos plotar os gráficos de linha e de *box-plot*.
+```{r fig.cap = "Grafíco de box-plot dos DBO's.", echo = FALSE}
+ggboxplot(dbo_dps, y = "Niveis", x = "Tipos", 
+          color = "Tipos", palette = c("#00AFBB", "#E7B800", "#FC4E07", "#ff0000"),
+          order = c("DBO-E","DBO-P","DBO-D","DBO-S"),
+          ylab = "Níveis", xlab = "DBOs")
+```
+```{r fig.cap = "Grafíco de linhas dos DBO's.", echo = FALSE}
+ggline(dbo_dps, x = "Tipos", y = "Niveis", 
+       add = c("mean_se", "jitter"), 
+       order = c("DBO-E","DBO-P","DBO-D","DBO-S"),
+       ylab = "Níveis", xlab = "DBOs")
+```
+
+Com estes gráficos já é notável que existe uma difernça entre as etapas do tratamento e principalmente ao final dele, onde o DBO reduz consideravelmente.
+
+```{r}
+anova <- aov(Niveis~Tipos,data=dbo_dps)
+anova
+```
+```{r}
+#Resumo
+summary(anova)
+```
+
+Com esse resultado do resumo da ANOVA, podemos observar que o "valor-p" é consideravelmente pequeno e isso rejeitará a hipótese nula de que todos são iguais, ou seja, existe diferença entre os DBOs entre as diversas etapas de tratamento da água na estação.
+
+### Análise de Regressão Simples
+
+A Análise de Regressão Simples tem como objetivo apresentar um modelo válido para explicar a relação entre duas variáveis e ver a relação entre elas.
+
+Neste caso faremos uma associação entre a quantidade de Sólidos Suspensos no primeiro decantador e a quantidade de sedimentos no mesmo.
+
+Teremos então as hipóteses:
+
+* ($H_{0}$) A correlação entre elas é nula, mais especificamente, 0.
+* ($H_{1}$) Existe correlação entre as variáveis, e é diferente de 0.
+
+```{r}
+#Informações básicas sobre.
+summary(data_est$'SS-P')
+var(data_est$'SS-P')
+sd(data_est$'SS-P')
+
+summary(data_est$'SED-P')
+var(data_est$'SED-P')
+sd(data_est$'SED-P')
+```
+
+Vamos plotar uma associação entre ambos.
+
+```{r}
+plot(data_est$'SS-P',data_est$'SED-P')
+```
+
+Faremos então uma correlação entre eles.
+
+```{r}
+cor(data_est$'SS-P',data_est$'SED-P')
+cor.test(data_est$'SS-P',data_est$'SED-P')
+```
+
+Nota-se pela correlação de Pearson que as variáveis não tem correlação igual a 0, o que mostra um forte indício de rejeição da hipótese nula.
+
+Neste momento então, vamos ajustar a nossa regressão, onde o Sedimentos em P são nossa variável que queremos achar um resultado sobre e Sólidos Suspenso em P nos dará essa base para achá-lo.
+
+```{r}
+#Ajuste para a regressao, lm(y ~ x) onde y eh a variavel resposta e x a variavel preditora
+ajuste <- lm(data_est$'SED-P' ~ data_est$'SS-P')
+
+#plota um resumo do ajuste
+summary(ajuste)
+
+#Plota a tabela de analise de variancia
+anova(ajuste)
+```
+
+O teste da ANOVA também demonstra que podemos rejeitar a hipótese nula, então existe correlação entre as variáveis.
+
+Com nosso modelo ajustado e feita a análise, vamos plotar um gráfico com esses dados e ver como eles se dispõem.
+
+```{r}
+#Plota a linha para a funcao
+plot(data_est$'SS-P',data_est$'SED-P')
+abline(lm(data_est$'SED-P' ~ data_est$'SS-P'))
+```
+
+Podemos então construir um intervalo de confiança com base no nosso modelo.
+
+```{r}
+#constroi um intervalo de confianca
+confint(ajuste)
+```
+
+Podemos agora fazer uma análise dos resíduos também deste ajuste.
+
+```{r}
+
+#Analise dos residuos
+plot(fitted(ajuste),residuals(ajuste),xlab="Valores Ajustados",ylab="Resíduos")
+abline(h=0)
+
+plot(data_est$'SS-P',residuals(ajuste),xlab="SS-P",ylab="Resíduos")
+abline(h=0)
+
+ajuste$residuals
+ajuste$fitted.values
+
+#mediana de SS-P
+median(data_est$'SS-P')
+
+#teste para comparacao das duas variancias
+var.test(residuals(ajuste)[data_est$'SS-P'>median(data_est$'SS-P')],
+         residuals(ajuste)[data_est$'SS-P'<median(data_est$'SS-P')])
+```
+
+Com isso podemos notar então que nossa variáveis estão correlacionadas, negando a hipótese nula inicialmente proposta por nós. E foi confirmada a hipótese alternativa através do modelo.
+
+### Análise de Regressão Múltipla
+
+### Análise de Componentes Principais
+
+O intuito da aplicação da Análise de Componentes Principais é reduzir a dimensionalidade dos dados para que seja facilitada a visualização dos mesmos e que se consiga ver como certas variáveis se relacionam.
+
+Carregamento da biblioteca *psych* para uso de alguns métodos para Componentes Principais.
+```{r message=FALSE,warning=FALSE}
+library(psych)
+```
+
+Nesta próxima parte estaremos tratando os dados, pois não podemos usá-lo com a coluna de Datas do conjunto de dados, então será removida.
+```{r}
+#Tratamento de dados
+X <- subset(data_est, select = -Data)
+```
+
+Com nossos dados tratados, vamos ver um breve resumo dos dados que temos.
+
+```{r}
+#Resumo
+summary(X)
+```
+
+Nesta parte será mostrada uma matriz de correlação gerada a partir do conjunto de dados que temos.
+
+```{r}
+cor(X)
+```
+
+Agora com noss matriz de correlação feita, vamos aplicar o método de Componentes Principais através da função `princomp()`.
+```{r}
+pca1 <- princomp(X, scores=TRUE, cor=TRUE)
+```
+
+Vamos então mostrar um resumo com as estatísticas da ACP gerada.
+
+```{r}
+summary(pca1)
+```
+
+E na próximo comando, iremos observar os fatores de carga gerados pela função `princomp()` dos nossos dados gerados.
+
+```{r}
+loadings(pca1)
+```
+
+Podemos então gerar dois gráficos, um de barras e outro do tipo *Scree* para visualizar melhor os nossos dados.
+
+```{r echo = FALSE}
+plot(pca1)
+```
+```{r echo = FALSE}
+screeplot(pca1, type="line", main="Scree Plot")
+```
+
+Isso mostra quantas componentes poderíamos estar usando para gerar um gráfico de melhor visualização destes dados. O que acontece neste caso é que precisaríamos de quatro componentes, e isso geraria um gráfico **QUADRIMENSIONAL**, que não é possível fazer a visualização dele, infelizmente.
+
+```{r echo = FALSE}
+biplot(pca1)
+```
+
+Com esse gráfico bidimensional temos uma melhor visão dos nossos dados nas componentes já geradas, mas ainda não estão alocados no ponto de origem, vamos aplicar então uma **Rotação VARIMAX** que permite os nossos dados e componentes de se fixarem a partir do ponto de origem do gráfico.
+
+```{r}
+pca2 <- principal(X, nfactors = 2, scores=TRUE)
+summary(pca2)
+```
+```{r echo = FALSE}
+biplot(pca2)
+```
+
+O que conseguimos visualizar com esse gráfico bidimensional?
+
+Ele mostra a correlação de certas variáveis e alguns agrupamentos entre elas. Os scores de perfomances estão mais agrupados. Algumas variáveis de entrada estão agrupadas com outras variáveis de entrada e alguams mais sobre etapas intermediárias. As de saída estão agrupadas em outra parte abaixo do gráfico mostrando relações através de uma componente.
+
+Com isso temos uma visão um pouco melhor dos nossos dados e como eles podem se relacionar.
+
+### Análise Fatorial
+
+Na Análise Fatorial, nosso intuito é conseguir identificar como as variáveis se relacionam, separando-as em grupos conhecidos como fatores, e quanto elas contribuem para esse fator em questão.
+
+#### Exploratória
+
+Na parte exploratória vamos gerar um modelo a partir dos nossos dados existentes.
+
+Temos novamente mais um estágio de tratamento de dados, ele se faz necessário para não atrapalhar ou corromper o conjunto de dados original.
+
+```{r}
+data_est_num <- data_est[,-1]
+data_est_num
+```
+
+Vamos então montar uma matriz de correlação entre as variáveis do *dataset* que possuímos.
+
+```{r}
+matriz_cor_data <- cor(data_est_num)
+```
+
+Precisamos carregar uma biblioteca para fazermos uma visualização da nossa matriz de correlação.
+
+```{r message=FALSE,warning=FALSE}
+library(corrplot)
+```
+
+E então vamos plotar nosso gráfico com correlações.
+```{r echo = FALSE}
+corrplot(matriz_cor_data)
+```
+
+É possível observar que temos diversas relações entre as variáveis de Performance, e algumas entre os pH's, condutividade (COND) e sedimentos (SED).
+
+
+```{r}
+#Teste de esfericidade de Bartlett
+
+Bartlett.sphericity.test <- function(x)
+{
+  method <- "Teste de esfericidade de Bartlett"
+  data.name <- deparse(substitute(x))
+  x <- subset(x, complete.cases(x)) # Omitindo valores faltantes
+  n <- nrow(x)
+  p <- ncol(x)
+  chisq <- (1-n+(2*p+5)/6)*log(det(cor(x)))
+  df <- p*(p-1)/2
+  p.value <- pchisq(chisq, df, lower.tail=FALSE)
+  names(chisq) <- "X-squared"
+  names(df) <- "df"
+  return(structure(list(statistic=chisq, parameter=df, p.value=p.value,
+                        method=method, data.name=data.name), class="htest"))
+}
+Bartlett.sphericity.test(data_est_num)
+```
+
+O teste de esfericidade de Bartlett que foi utilizado acima, nos mostra que é possível fazer uso desse conjunto de dados pois o "valor-p" é baixo.
+
+Vamos aplicar um teste nos nossos dados para verificar se eles são bons para fazermos essa análise, isso pode ser feito através do teste de KMO apresentado abaixo.
+
+```{r}
+#KMO
+kmo = function(x)
+{
+  x = subset(x, complete.cases(x))
+  r = cor(x)
+  r2 = r^2 
+  i = solve(r) 
+  d = diag(i) 
+  p2 = (-i/sqrt(outer(d, d)))^2 
+  diag(r2) <- diag(p2) <- 0 
+  KMO = sum(r2)/(sum(r2)+sum(p2))
+  MSA = colSums(r2)/(colSums(r2)+colSums(p2))
+  return(list(KMO=KMO, MSA=MSA))
+}
+
+kmo_data <- kmo(data_est_num)
+print(kmo_data)
+```
+
+Obtivemos uma saída de **0.7078904**, o que é um número razoável na escala do teste de KMO.
+
+Nesta etapa, montamos uma matriz de correlação parcial para analisarmos.
+
+```{r}
+#Matriz de correlacao parcial
+partial.cor <- function (x)
+{
+  R <- cor(x)
+  RI <- solve(R)
+  D <- 1/sqrt(diag(RI))
+  Rp <- -RI * (D %o% D)
+  diag(Rp) <- 0
+  rownames(Rp) <- colnames(Rp) <- colnames(x)
+  Rp
+}
+mat_anti_imagem <- -partial.cor(data_est_num)
+mat_anti_imagem
+```
+
+E logo depois montaremos a análise utilizando o nosso conjunto de dados, aplicando ACP neste e plotando a saída obtida através dele.
+
+```{r}
+#Método dos componentes principais
+acpcor <- prcomp(data_est_num, scale = TRUE)
+summary(acpcor)
+
+```
+
+Faremos um gráfico para ver quantas componentes precisamos aplicar para nossos dados.
+
+```{r echo=FALSE}
+plot(1:ncol(data_est_num), acpcor$sdev^2, type = "b", xlab = "Componente",
+     ylab = "Variância", pch = 20, cex.axis = 1.3, cex.lab = 1.3)
+```
+
+Neste caso, quatro componentes é o suficiente para explicar a grande parte dos dados obtidos.
+
+```{r}
+#fatores
+k <- 4
+carfat <- acpcor$rotation[, 1:k] %*% diag(acpcor$sdev[1:k])
+colnames(carfat) <- paste("Fator", 1:k, sep = " ")
+carfat
+
+#estimação das comunalidades e das variâncias específicas
+comum <- rowSums(carfat^2)
+vespec <- diag(matriz_cor_data) - comum
+estimat <- cbind(comum, vespec, diag(matriz_cor_data))
+rownames(estimat) <- colnames(data_est_num)
+colnames(estimat) <- c("Comunalidade", "Variância única", "Variância")
+estimat
+
+resid <- matriz_cor_data - (carfat %*% t(carfat) + diag(vespec))
+resid
+
+#Visando auxiliar na interpretação dos fatores, realizamos uma rotação
+#pelo método varimax.
+#A função varimax encontra-se no pacote stats.
+
+carfatr <- varimax(carfat)
+carfatr
+```
+
+Com nossa análise aplicada, vamos mostrar primeiramente o gráfico onde as cargas ainda não estão rotacionadas e se encontram dispersas.
+
+```{r echo = FALSE}
+#Plot sem rotação varimax
+plot(carfat, pch = 20, col = "red", xlab = "Fator 1", ylab = "Fator 2")
+text(carfat, rownames(carfat), adj = 1)
+
+```
+
+Agora podemos analisar o gráfico com a rotação *VARIMAX* aplicada às nossas cargas.
+
+```{r echo = FALSE}
+#Plot com rotação varimax
+plot(carfatr$loadings, pch = 20, col = "red", xlab = "Fator 1", ylab = "Fator 2")
+text(carfatr$loadings, rownames(carfat), adj = 1)
+
+```
+
+Nota-se um agrupamento de dados de acordo com algumas variáveis. As variáveis de performance se encontram abaixo no gráfico agrupadas. Acima, temos algumas das variáveis de saída agrupadas. Ao centro temos a concentração da maior parte das variáveis restantes. E no canto esquerdo, observa-se uma reunião de algumas outras variáveis.
+
+#### Confirmatória
+
+Após a realização de nossa Análise Fatorial Exploratória, vamos realizar a outra etapa que é a Confirmatória, para verificar se o modelo condiz com aquilo que encontramos.
+
+Carregaremos algumas bibliotecas necessárias para fazer as análises.
+
+```{r message=FALSE,warning=FALSE}
+library(psych)
+library(lavaan)
+library(mirt)
+library(semPlot)
+```
+
+Para esta análise em específico, teremos de renomear as variáveis à uma exigência do método que utilizamos da biblioteca.
+
+```{r}
+#Tratamento de dados.
+data_est_num_renamed <- data_est_num
+names(data_est_num_renamed) <- c(
+  "QE","ZNE","PHE","DBOE","DQOE",
+  "SSE","SSVE","SEDE","CONDE",
+  "PHP","DBOP","SSP","SSVP","SEDP","CONDP",
+  "PHD","DBOD","DQOD","SSD","SSVD","SEDD","CONDD",
+  "PHS","DBOS","DQOS","SSS","SSVS","SEDS","CONDS",
+  "RDDBOP","RDSSP","RDSEDP",
+  "RDDBOS","RDDQOS",
+  "RDDBOG","RDDQOG","RDSSG","RDSEDG"
+)
+```
+
+Com nossos dados reformulados teremos agora uma série de gráficos a serem gerados.
+
+```{r echo=FALSE}
+scree(data_est_num_renamed)
+```
+```{r echo = FALSE}
+ma_cor <- cor(data_est_num_renamed)
+fa(ma_cor, cor = 'poly')
+fa.parallel(ma_cor, cor = 'poly')
+factor.plot(fa(ma_cor, cor = 'poly'), cut=.2)
+```
+
+Gerados parte de nossos gráficos, vamos começar a montar nosso modelo de acordo com a análise exploratória.
+
+```{r}
+#criar um SEM
+sum(is.na(data_est_num_renamed[1:38]))
+
+modelo_ceri <- 'Performance =~ RDDBOS + RDDQOS + RDDQOG + RDDBOG + RDSEDG + RDSSG
+Saida =~ DBOS + DQOS + SEDS + SSS
+Intermedio =~ SSVE + SSVS + SSVP + SSVD + 
+SSE + SSP + SSD + 
+SEDE + SEDP + 
+CONDE + CONDP + CONDS + SEDD +
+PHP + PHD + PHE + PHS +
+ZNE + QE +
+RDSSP + RDSEDP + RDDBOP
+Demanda =~ DQOD + DQOE +
+  DBOD + DBOE + DBOP
+'
+```
+```{r echo = FALSE, results = 'hide', warning=FALSE}
+ceri_fit <- lavaan(modelo_ceri, data = data_est_num_renamed, auto.var = TRUE,
+                   auto.fix.first = TRUE, auto.cov.lv.x = TRUE, estimator = "ML")
+```
+```{r}
+summary(ceri_fit, standardized = TRUE, fit.measures = TRUE, rsquare = TRUE)
+semPaths(ceri_fit, what = "std", residuals = FALSE, nCharNodes = 4, edge.label.cex = 0.7, legend = FALSE, title.cex = 0.5)
+standardizedsolution(ceri_fit)
+
+```
+
+Neste último gráfico final que obtivemos, podemos observar o nosso modelo resultante com suas cargas fatoriais para cada fator e quanto cada varíavel contribui para ele, além da relação entre os próprios fatores.
+
+### Escalonamento Multidimensional
+
+O intuito do Escalonamento Multidimensional também é reduzir o número de dimensões para melhorar a visualização dos dados, porém neste caso se consegue observar melhor os dados pois podemos agrupar os dados em alguns grupos que tem características parecidas através da técnica dos *k-means*.
+
+Faremos o mesmo tratamento de dados feitos nas análises anteriores.
+```{r}
+#Tratamento de dados.
+data_est_esc_mult <- data_est[,-1]
+```
+
+Carregaremos estas bibliotecas que se fazem necessária para a visualização dos dados.
+
+```{r message=FALSE, warning=FALSE}
+library(magrittr)
+library(dplyr)
+library(ggpubr)
+```
+
+Computaremos então nosso Escalonamento Multidimensional.
+
+```{r}
+#MDS
+mds <- data_est_esc_mult %>%
+  dist() %>%          
+  cmdscale() %>%
+  as_tibble()
+colnames(mds) <- c("Dim.1", "Dim.2")
+```
+
+Agora vamos plotar em um gráfico bidimensional os nossos dados para visualização.
+
+```{r echo = FALSE}
+# Plot MDS
+ggscatter(mds, x = "Dim.1", y = "Dim.2", 
+          size = 1,
+          repel = TRUE)
+```
+
+Podemos então computar nossos clusters ou grupos, para que possamos visualizar como eles se compartam nestes dados.
+
+```{r}
+# K-means clustering
+clust <- kmeans(mds, 3)$cluster %>%
+  as.factor()
+mds <- mds %>%
+  mutate(groups = clust)
+```
+```{r echo = FALSE}
+# Plot and color by groups
+ggscatter(mds, x = "Dim.1", y = "Dim.2", 
+          color = "groups",
+          palette = "jco",
+          size = 1, 
+          ellipse = TRUE,
+          ellipse.type = "convex",
+          repel = TRUE)
+
+```
+
+É interessante pois se nota um agrupamento de três grupos perto do centro e espalhado para suas extremidades.
+
+### Análise Discriminante
+
+Não é possível fazer uma análise usando a Análise Discriminante devido ao fato de que não existem variáveis qualitativas em nosso conjunto de dados para a aplicação desta técnica de análise em específico. A mesma depende de uma qualitativa para que possa gerar um resultado.
+
+### Correlação Canônica
+
+A Correlação Canônica usa o mesmo princípio da ACP, porém ela tem como objetivo explorar a correlação entre duas partes do conjunto de dados, enquanto a ACP busca diminuir sua dimensionalidade. 
+
+Carregamento das bibliotecas necessárias para a análise.
+```{r message=FALSE,warning=FALSE}
+library(CCA)
+library(vegan)
+```
+
+Fazemos então o tratamento de dados e separamos os conjuntos de dados a serem analisados.
+
+```{r}
+#Tratamento de dados.
+data_cor_cc <- data_est[,-1]
+
+data_ent_itr <- data_cor_cc[,1:29]
+data_perf <- data_cor_cc[,30:38]
+```
+
+Criamos então uma matriz de correlação com esses dados e a plotamos para visualização.
+
+```{r}
+ma_correl <- matcor(data_ent_itr,data_perf)
+img.matcor(ma_correl,type = 2)
+```
+
+Fazemos logo após isso. A Correlação Canônica entre os dados para fazermos a análise deles.
+
+```{r}
+#Aplicação da função de correlação
+cc <- cc(data_ent_itr,data_perf)
+
+#Output da função.
+cc$cor
+```
+
+Feito isso podemos ver as correlações em um gráfico.
+
+```{r echo = FALSE}
+par(mfrow = c(1,2))
+barplot(cc$cor, main = "Canonical correlations ", col = "gray")
+```
+```{r echo = FALSE}
+plt.cc(cc, var.label = TRUE)
+```
+
+Nestes gráficos vemos as distribuições das variáveis e como elas se dispõem, foco no primeiro gráfico que mostra como algumas variáveis se distânciam e outras se agrupam.
+
+```{r echo = FALSE}
+cc2 <- cca(data_ent_itr,data_perf)
+plot(cc2, scaling=1)
+```
+
+Por fim vemos o gráfico onde temos ao que parecem ser duas componentes que se separam com dados que possuem afinidade, os DBO's e DQO's se encontram juntos pois tem alguma correlação, enquanto acima, observamos que os Sólidos Suspenso e Sedimentos tem maior afinidade entre eles.
+
+### Testes de Aderência
+
+### Co-clustering
+
+Para a técnica de Co-clustering, utilizaremos a biblioteca *biclust*.
+
+```{r message=FALSE,warning=FALSE}
+library(biclust)
+```
+
+Para que a execução da técnica de Co-clustering seja efetuada corretamente, é necessário que tratemos os nossos dados novamente, porém desta vez os colocando dentro de uma matriz, para atender a exigência da função `biclust()`.
+
+```{r}
+#Tratamento dos dados
+data_est_num <- data_est[,-1]
+
+data_est_biclust <- data.matrix(data_est_num)
+```
+
+E assim executamos a função `biclust()` com o método *BCCC*, e esta nos retornará o número de clusters e outras informações sobre estes dados.
+
+```{r}
+data_est_biclust_bccc <- biclust(data_est_biclust,method="BCCC")
+data_est_biclust_bccc
+```
+
+Com estes mesmos dados, vamos realizar o plot dos heatmaps utilizando a saída do método e a nossa matriz de entrada para ele.
+
+```{r echo = FALSE}
+drawHeatmap2(data_est_biclust,data_est_biclust_bccc,1)
+```
+```{r echo = FALSE}
+heatmapBC(data_est_biclust,data_est_biclust_bccc)
+```
+
+A análise destes Heatmaps se mostra complicada pois somente uma coluna tem as relações entre as entradas, que se relaciona mais fortemente. Essa variável é de difícil identificação dado ao número de variáveis presentes.
+
+### Random Forest
+
+Não foi possível aplicar a análise de Random Forest neste conjunto de dados pois não se pode aplicar o treinamento em cima de variáveis que faltam informações nas variáveis preditoras. E com isso nosso filtro de entradas acaba eliminando todas as entradas com falta destas, tornando inviável a possibilidade de se colocar um conjunto de treinamento para realizar a análise.
+
+### Regressão Logística
+
+Para a aplicação da técnica de Regressão Logística seria necessário que houvesse em nosso conjunto de dados, uma ou mais variáveis categóricas BINÁRIAS que pudessem ser utilizadas para ser feita a análise, já que a mesma depende destas para ser efetuada, e nosso conjunto de dados não possui nenhuma, inviabilizando a apliacação da técnica.

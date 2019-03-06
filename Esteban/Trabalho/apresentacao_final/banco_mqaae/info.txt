@@ -1,0 +1,88 @@
+Dados de uma estação de tratamento de água
+
+plant - estação de tratamento
+settler - assentador / decantador
+
+
+Variáveis:
+
+N.  Attrib.    
+ 1  Q-E        (input flow to plant)  -  vazão de água para a planta
+ 2  ZN-E       (input Zinc to plant)  -  quantidade de zinco para a planta
+ 3  PH-E       (input pH to plant) - pH para a planta
+ 4  DBO-E      (input Biological demand of oxygen to plant)  - Demanda biológica(bioquimica) de oxigenio para a planta
+ 5  DQO-E      (input chemical demand of oxygen to plant)  - Demanda quimica de oxigênio para a planta
+ 6  SS-E       (input suspended solids to plant)  -  Solidos suspensos para a planta
+ 7  SSV-E      (input volatile supended solids to plant) - solidos suspenso volateis para a planta
+ 8  SED-E      (input sediments to plant) - quantidade de sedimentos para a planta
+ 9  COND-E     (input conductivity to plant) - condutividade da agua para a planta
+10  PH-P       (input pH to primary settler) - pH no primeiro assentador
+11  DBO-P      (input Biological demand of oxygen to primary settler) - demanda bioquimica de oxigenio no primeiro assentador
+12  SS-P       (input suspended solids to primary settler) - solidos suspensos no primeiro assentador
+13  SSV-P      (input volatile supended solids to primary settler) - solidos suspensos volateis no primeiro assentador
+14  SED-P      (input sediments to primary settler) - sedimentos no primeiro assentador
+15  COND-P     (input conductivity to primary settler) - condutividade no primeiro assentador
+16  PH-D       (input pH to secondary settler) - pH no segundo assentador
+17  DBO-D      (input Biological demand of oxygen to secondary settler) - demanda bioquimica de oxigenio no segundo assentador
+18  DQO-D      (input chemical demand of oxygen to secondary settler) - demanda quimica de oxigenio no segundo assentador
+19  SS-D       (input suspended solids to secondary settler) - solidos suspensos no segundo assentador
+20  SSV-D      (input volatile supended solids to secondary settler) - solidos suspensos volateis no segundo assentador
+21  SED-D      (input sediments to secondary settler)  - sedimentos no segundo assentador
+22  COND-D     (input conductivity to secondary settler) - condutividade no segundo assentador
+23  PH-S       (output pH)   - pH de saída da planta
+24  DBO-S      (output Biological demand of oxygen) - demanda bioquímica da saída
+25  DQO-S      (output chemical demand of oxygen) - demanda química da saída
+26  SS-S       (output suspended solids) - sólidos suspensos da saída
+27  SSV-S      (output volatile supended solids) - solidos suspensos voláteis da saída
+28  SED-S      (output sediments) - sedmentos da saída
+29  COND-S     (output conductivity) - condutividade da saída
+30  RD-DBO-P   (performance input Biological demand of oxygen in primary settler)
+31  RD-SS-P    (performance input suspended solids to primary settler)
+32  RD-SED-P   (performance input sediments to primary settler)
+33  RD-DBO-S   (performance input Biological demand of oxygen to secondary settler)
+34  RD-DQO-S   (performance input chemical demand of oxygen to secondary settler)
+35  RD-DBO-G   (global performance input Biological demand of oxygen)
+36  RD-DQO-G   (global performance input chemical demand of oxygen)
+37  RD-SS-G    (global performance input suspended solids) 
+38  RD-SED-G   (global performance input sediments)
+
+D-
+1/3/90, 1   // Data do dia que foi recolhido essa amostra
+44101, 2 Q-E
+1.50, 3 ZN-E
+7.8, 4 PH-E
+?, 5 DBO-E
+407, 6 DQO-E
+166, 7 SS-E
+66.3, 8 SSV-E
+4.5, 9 SED-E
+2110, 10 COND-E
+7.9, 11 PH-P
+?, 12 DBO-P
+228, 13 SS-P
+70.2, 14 SSV-P
+5.5, 15 SED-P
+2120, 16 COND-P
+7.9, 17 PH-D
+?, 18 DBO-D
+280, 19 DQO-D
+94, 20 SS-D
+72.3, 21 SSV-D
+0.3, 22 SED-D
+2010, 23 COND-D
+7.3, 24 PH-S
+?, 25 DBO-S
+84, 26 DQO-S
+21, 27 SS-S
+81.0, 28 SSV-S
+0.02, 29 SED-S
+2000, 30 COND-S
+?, 31 RD-DBO-P
+58.8, 32 RD-SS-P
+95.5, 33 RD-SED-P
+?, 34 RD-DBO-S
+70.0, 35 RD-DQO-S
+?, 36 RD-DBO-G
+79.4, 37 RD-DQO-G
+87.3, 38 RD-SS-G
+99.6 39 RD-SED-G
